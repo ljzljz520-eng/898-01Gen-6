@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #f5f0e6;
+  background-color: #1a1a1a;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+  color: #f5f0e6;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gold-500 text-charcoal-900 px-6 py-2.5 rounded-lg font-medium transition-all duration-300 hover:bg-gold-400 hover:shadow-gold-glow;
+  }
+  
+  .btn-secondary {
+    @apply border border-gold-500 text-gold-500 px-6 py-2.5 rounded-lg font-medium transition-all duration-300 hover:bg-gold-500/10 hover:shadow-gold-glow;
+  }
+  
+  .btn-danger {
+    @apply bg-red-500/20 text-red-400 border border-red-500/50 px-6 py-2.5 rounded-lg font-medium transition-all duration-300 hover:bg-red-500/30;
+  }
+  
+  .card {
+    @apply bg-charcoal-700/50 backdrop-blur-sm border border-charcoal-600 rounded-xl overflow-hidden transition-all duration-300 hover:border-gold-500/50 hover:shadow-gold-glow;
+  }
+  
+  .input-field {
+    @apply w-full bg-charcoal-800 border border-charcoal-600 rounded-lg px-4 py-3 text-cream-300 placeholder-charcoal-400 transition-all duration-300 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500;
+  }
+  
+  .form-label {
+    @apply block text-cream-400 text-sm font-medium mb-2;
+  }
+  
+  .gold-border {
+    @apply border border-gold-500/30 hover:border-gold-500/60 transition-colors duration-300;
+  }
+  
+  .gold-text-gradient {
+    @apply bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+::selection {
+  background-color: rgba(212, 175, 55, 0.3);
+  color: #f5f0e6;
+}
