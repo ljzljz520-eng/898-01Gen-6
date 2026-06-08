@@ -49,7 +49,25 @@ export const UserController = {
         return;
       }
 
-      const data = req.body as Partial<User>;
+      const data = req.body as any;
+      
+      if (data.password) {
+        if (!data.oldPassword) {
+          res.status(400).json({ error: '请输入当前密码' });
+          return;
+        }
+        
+        const isValid = await UserService.verifyPassword(req.user.username, data.oldPassword);
+        if (!isValid) {
+          res.status(400).json({ error: '当前密码不正确' });
+          return;
+        }
+        
+        if (data.password.length < 6) {
+          res.status(400).json({ error: '新密码长度至少6位' });
+          return;
+        }
+      }
       
       const user = await UserService.update(req.user.id, data);
       if (!user) {

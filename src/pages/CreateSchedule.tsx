@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, MapPin, Calendar, DollarSign, Tags, Clock, Phone, FileText, Send, Loader2 } from 'lucide-react';
+import { Plus, MapPin, Calendar, DollarSign, Tags, Clock, Phone, FileText, Send, Loader2, ImagePlus, X, Image as ImageIcon } from 'lucide-react';
 import { useStore } from '../store/useStore.js';
 import Navbar from '../components/Navbar.js';
 
@@ -23,6 +23,7 @@ interface FormErrors {
 export default function CreateSchedule() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, error, createSchedule, clearError } = useStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
@@ -35,6 +36,8 @@ export default function CreateSchedule() {
   const [workRequirements, setWorkRequirements] = useState('');
   const [contact, setContact] = useState('');
   const [description, setDescription] = useState('');
+  const [samplePhotos, setSamplePhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [localError, setLocalError] = useState('');
 
@@ -57,6 +60,29 @@ export default function CreateSchedule() {
         ? prev.filter(s => s !== style)
         : [...prev, style]
     );
+  };
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const remainingSlots = 9 - samplePhotos.length;
+    const newFiles = Array.from(files).slice(0, remainingSlots);
+
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPhotoPreviews(prev => [...prev, event.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    setSamplePhotos(prev => [...prev, ...newFiles]);
+  };
+
+  const removePhoto = (index: number) => {
+    setSamplePhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const validate = (): boolean => {
@@ -106,9 +132,9 @@ export default function CreateSchedule() {
         workRequirements: workRequirements.trim() || undefined,
         contact: contact.trim(),
         description: description.trim(),
-        samplePhotos: []
+        samplePhotos
       });
-      navigate('/schedule');
+      navigate('/schedules');
     } catch (err) {
       // Error is handled by store
     }
@@ -309,6 +335,57 @@ export default function CreateSchedule() {
                   className="input-field min-h-[100px] resize-none"
                   placeholder="其他需要说明的事项"
                 />
+              </div>
+
+              <div>
+                <label className="form-label flex items-center space-x-2">
+                  <ImageIcon className="w-4 h-4 text-gold-500" />
+                  <span>样片展示（最多9张）</span>
+                </label>
+                <p className="text-xs text-cream-500 mb-3">上传你的作品样片，展示你的拍摄风格和能力</p>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  {photoPreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-charcoal-700 group">
+                      <img
+                        src={preview}
+                        alt={`样片 ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(index)}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {samplePhotos.length < 9 && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square rounded-lg border-2 border-dashed border-charcoal-600 hover:border-gold-500 flex flex-col items-center justify-center text-cream-500 hover:text-gold-500 transition-colors"
+                    >
+                      <ImagePlus className="w-8 h-8 mb-2" />
+                      <span className="text-xs">添加样片</span>
+                    </button>
+                  )}
+                </div>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+                
+                <p className="mt-2 text-xs text-cream-500">
+                  已选择 {samplePhotos.length}/9 张
+                </p>
               </div>
 
               <div className="pt-4">

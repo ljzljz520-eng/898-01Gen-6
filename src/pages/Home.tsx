@@ -73,7 +73,7 @@ export default function Home() {
             style={{ animationDelay: '0.4s' }}
           >
             <Link
-              to="/schedules/new"
+              to="/schedule/create"
               className="group btn-primary text-lg px-8 py-4 flex items-center space-x-2 w-full sm:w-auto justify-center"
             >
               <Calendar className="w-5 h-5" />
@@ -170,7 +170,7 @@ export default function Home() {
               <h3 className="font-display text-xl font-bold text-cream-300 mb-2">暂无档期</h3>
               <p className="text-cream-500 mb-6">成为第一个发布档期的用户吧</p>
               <button
-                onClick={() => navigate('/schedules/new')}
+                onClick={() => navigate('/schedule/create')}
                 className="btn-primary"
               >
                 发布档期
@@ -226,7 +226,6 @@ export default function Home() {
                 >
                   <WorkCard 
                     work={work}
-                    onView={(w) => navigate(`/work/${w.id}`)}
                   />
                 </div>
               ))}

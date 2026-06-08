@@ -50,7 +50,26 @@ export const ScheduleController = {
         return;
       }
 
-      const data = req.body as CreateScheduleRequest;
+      const body = req.body as any;
+      
+      const data: CreateScheduleRequest = {
+        title: body.title,
+        city: body.city,
+        date: body.date,
+        style: typeof body.style === 'string' ? JSON.parse(body.style) : body.style || [],
+        feeType: body.feeType || 'negotiable',
+        fee: body.fee ? parseInt(body.fee) : 0,
+        feeNote: body.feeNote || undefined,
+        duration: body.duration || undefined,
+        workRequirements: body.workRequirements || undefined,
+        contact: body.contact,
+        description: body.description || '',
+        samplePhotos: []
+      };
+      
+      if (req.files && Array.isArray(req.files)) {
+        data.samplePhotos = req.files.map((file: Express.Multer.File) => `/uploads/${file.filename}`);
+      }
       
       if (!data.title || !data.city || !data.date || !data.style || data.style.length === 0) {
         res.status(400).json({ error: '请填写标题、城市、日期和拍摄风格' });
@@ -78,7 +97,26 @@ export const ScheduleController = {
         return;
       }
 
-      const data = req.body as Partial<CreateScheduleRequest>;
+      const body = req.body as any;
+      const data: Partial<CreateScheduleRequest> = {};
+      
+      if (body.title !== undefined) data.title = body.title;
+      if (body.city !== undefined) data.city = body.city;
+      if (body.date !== undefined) data.date = body.date;
+      if (body.style !== undefined) {
+        data.style = typeof body.style === 'string' ? JSON.parse(body.style) : body.style;
+      }
+      if (body.feeType !== undefined) data.feeType = body.feeType;
+      if (body.fee !== undefined) data.fee = parseInt(body.fee);
+      if (body.feeNote !== undefined) data.feeNote = body.feeNote;
+      if (body.duration !== undefined) data.duration = body.duration;
+      if (body.workRequirements !== undefined) data.workRequirements = body.workRequirements;
+      if (body.contact !== undefined) data.contact = body.contact;
+      if (body.description !== undefined) data.description = body.description;
+      
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        data.samplePhotos = req.files.map((file: Express.Multer.File) => `/uploads/${file.filename}`);
+      }
       
       const schedule = await ScheduleService.update(id, req.user.id, data);
       if (!schedule) {

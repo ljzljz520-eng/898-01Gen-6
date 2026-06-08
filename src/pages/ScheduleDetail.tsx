@@ -104,10 +104,6 @@ export default function ScheduleDetail() {
     }
   };
 
-  const handleEdit = () => {
-    navigate(`/schedule/${id}/edit`);
-  };
-
   const handleDelete = async () => {
     if (!schedule) return;
     
@@ -306,13 +302,6 @@ export default function ScheduleDetail() {
               <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-charcoal-600">
                 {isOwner ? (
                   <>
-                    <button 
-                      onClick={handleEdit}
-                      className="flex-1 btn-secondary inline-flex items-center justify-center"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      编辑档期
-                    </button>
                     <button 
                       onClick={() => setIsDeleteModalOpen(true)}
                       className="flex-1 btn-danger inline-flex items-center justify-center"

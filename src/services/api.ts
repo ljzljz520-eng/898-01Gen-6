@@ -23,13 +23,16 @@ function getAuthHeader(): Record<string, string> {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit & { skipJson?: boolean } = {}
 ): Promise<T> {
-  const headers = {
-    'Content-Type': 'application/json',
+  const headers: Record<string, string> = {
     ...getAuthHeader(),
-    ...options.headers
+    ...(options.headers as Record<string, string> || {})
   };
+  
+  if (!options.skipJson) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
@@ -74,7 +77,7 @@ export const api = {
     getUserById: (id: number): Promise<User> =>
       request(`/users/${id}`),
 
-    updateProfile: (data: Partial<User> & { password?: string }): Promise<User> =>
+    updateProfile: (data: Partial<User> & { password?: string; oldPassword?: string }): Promise<User> =>
       request('/users/profile', {
         method: 'PUT',
         body: JSON.stringify(data)
@@ -97,17 +100,59 @@ export const api = {
     getScheduleById: (id: number): Promise<Schedule> =>
       request(`/schedules/${id}`),
 
-    createSchedule: (data: CreateScheduleRequest): Promise<Schedule> =>
-      request('/schedules', {
+    createSchedule: (data: CreateScheduleRequest & { samplePhotos?: File[] }): Promise<Schedule> => {
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('city', data.city);
+      formData.append('date', data.date);
+      formData.append('style', JSON.stringify(data.style));
+      formData.append('feeType', data.feeType || 'negotiable');
+      formData.append('fee', (data.fee || 0).toString());
+      if (data.feeNote) formData.append('feeNote', data.feeNote);
+      if (data.duration) formData.append('duration', data.duration);
+      if (data.workRequirements) formData.append('workRequirements', data.workRequirements);
+      formData.append('contact', data.contact);
+      formData.append('description', data.description || '');
+      
+      if (data.samplePhotos && data.samplePhotos.length > 0) {
+        data.samplePhotos.forEach(file => {
+          formData.append('samplePhotos', file);
+        });
+      }
+      
+      return request('/schedules', {
         method: 'POST',
-        body: JSON.stringify(data)
-      }),
+        body: formData,
+        skipJson: true
+      });
+    },
 
-    updateSchedule: (id: number, data: Partial<CreateScheduleRequest>): Promise<Schedule> =>
-      request(`/schedules/${id}`, {
+    updateSchedule: (id: number, data: Partial<CreateScheduleRequest> & { samplePhotos?: File[] }): Promise<Schedule> => {
+      const formData = new FormData();
+      if (data.title !== undefined) formData.append('title', data.title);
+      if (data.city !== undefined) formData.append('city', data.city);
+      if (data.date !== undefined) formData.append('date', data.date);
+      if (data.style !== undefined) formData.append('style', JSON.stringify(data.style));
+      if (data.feeType !== undefined) formData.append('feeType', data.feeType);
+      if (data.fee !== undefined) formData.append('fee', data.fee.toString());
+      if (data.feeNote !== undefined) formData.append('feeNote', data.feeNote);
+      if (data.duration !== undefined) formData.append('duration', data.duration);
+      if (data.workRequirements !== undefined) formData.append('workRequirements', data.workRequirements);
+      if (data.contact !== undefined) formData.append('contact', data.contact);
+      if (data.description !== undefined) formData.append('description', data.description);
+      
+      if (data.samplePhotos && data.samplePhotos.length > 0) {
+        data.samplePhotos.forEach(file => {
+          formData.append('samplePhotos', file);
+        });
+      }
+      
+      return request(`/schedules/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data)
-      }),
+        body: formData,
+        skipJson: true
+      });
+    },
 
     deleteSchedule: (id: number): Promise<{ message: string }> =>
       request(`/schedules/${id}`, {

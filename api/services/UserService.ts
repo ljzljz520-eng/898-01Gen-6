@@ -80,7 +80,7 @@ export const UserService = {
     return user;
   },
 
-  async update(id: number, data: Partial<User>): Promise<User | null> {
+  async update(id: number, data: Partial<User> & { password?: string }): Promise<User | null> {
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -111,6 +111,11 @@ export const UserService = {
     if (data.phone !== undefined) {
       fields.push('phone = ?');
       params.push(data.phone);
+    }
+    if (data.password !== undefined) {
+      const hashedPassword = bcrypt.hashSync(data.password, 10);
+      fields.push('password_hash = ?');
+      params.push(hashedPassword);
     }
 
     if (fields.length === 0) return this.findById(id);

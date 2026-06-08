@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -65,6 +65,7 @@ export default function Profile() {
   const [cancellationRecords, setCancellationRecords] = useState<CancellationRecord[]>([]);
   const [creditsLoading, setCreditsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const dataLoadedRef = useRef(false);
 
   const userSchedules = schedules.filter(s => s.userId === user?.id);
   const completedShootings = works.length;
@@ -87,6 +88,8 @@ export default function Profile() {
     }
 
     const loadData = async () => {
+      if (dataLoadedRef.current) return;
+      dataLoadedRef.current = true;
       setPageLoading(true);
       try {
         await Promise.all([
@@ -95,6 +98,7 @@ export default function Profile() {
         ]);
       } catch (error) {
         console.error('Failed to load data:', error);
+        dataLoadedRef.current = false;
       } finally {
         setPageLoading(false);
       }
@@ -103,7 +107,7 @@ export default function Profile() {
     if (isAuthenticated) {
       loadData();
     }
-  }, [isAuthenticated, storeLoading, navigate, user, fetchSchedules, fetchWorks]);
+  }, [isAuthenticated, storeLoading, navigate, user]);
 
   const loadCancellationRecords = useCallback(async () => {
     if (cancellationRecords.length > 0) return;
@@ -206,6 +210,7 @@ export default function Profile() {
     setSubmitLoading(true);
     try {
       await api.users.updateProfile({
+        oldPassword: passwordForm.oldPassword,
         password: passwordForm.newPassword
       });
       setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -513,7 +518,7 @@ export default function Profile() {
                         title="暂无发布的档期"
                         description="发布你的第一个拍摄档期，开始寻找合作机会"
                         actionText="发布档期"
-                        onAction={() => navigate('/create-schedule')}
+                        onAction={() => navigate('/schedule/create')}
                       />
                     )}
                   </div>
